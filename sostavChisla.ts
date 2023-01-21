@@ -15,17 +15,22 @@
 function sostavChisla(massivChisel: number[], chislo: number): number[][] {
   const numbers = massivChisel.concat().sort()
 
-  /**
-   * Возвращает индекс задающий минимальный интервал включающий переданную точку.
-   * Числа после возвращённого индекса точно не содержат запрошенное число.
-   * Числа в получившемся интервале возможно содержат эту точку.
-   */
-  function slice(numbers: number[], target: number, start: number, end = numbers.length): number {
-    for (let i = start; i < end; i++)
-      if (numbers[i] >= target)
-        return i
+  function binarySearch(numbers: number[], target: number, start = 0, end = numbers.length - 1) {
+    let middle = Math.round((end - start) / 2) + start;
+    for (; start < end && numbers[middle] !== target;) {
+      if (numbers[middle] > target) {
+        end = middle - 1;
+      } else {
+        start = middle + 1;
+      }
+      middle = Math.round((end - start) / 2) + start;
+    }
 
-    return -1
+    if (numbers[middle] === target) {
+      return middle
+    } else {
+      return -1
+    }
   }
 
   /**
@@ -33,25 +38,17 @@ function sostavChisla(massivChisel: number[], chislo: number): number[][] {
    * Основной метод, комбинации большей длинны рекурсивно сводятся к этому методу.
    */
   function getTwos(numbers: number[], target: number, start = 0, end = numbers.length): number[][] {
-    /** индекс максимума среди элементов меньше target / 2 */
-    // хотябы одно число в паре должно быть <= target / 2
-    // однако т.к. числа во входящем массиве уникальны - неравенство строгое
-    const middle = slice(numbers, target / 2, start, end) - 1
-    if (middle < 0)
-      return []
-
     const result: number[][] = []
-    for (let i = start; i <= middle; i++) {
-      /** необходимое для образования пары, число */
-      // numbers[i] - это первое число в паре
-      const secondValue = target - numbers[i]
-      /** предполагаемая позиция парного числа */
-      // т.к. первое число меньше target / 2, второе должно быть больше
-      const second = slice(numbers, secondValue, middle)
-      if (numbers[second] !== secondValue)
-        continue
 
-      result.push([numbers[i], numbers[second]])
+    const half = target / 2
+    // последний элемент в последовательности точно не является первым в выборке
+    const maxFirstPosition = end - 1
+    for (let i = start; i < maxFirstPosition && numbers[i] < half; i++) {
+      const secondValue = target - numbers[i]
+      const secondIndex = binarySearch(numbers, secondValue, i + 1, end - 1)
+      if (secondIndex > 0 && numbers[secondIndex] === secondValue) {
+        result.push([numbers[i], numbers[secondIndex]])
+      }
     }
 
     return result
@@ -87,8 +84,8 @@ function sostavChisla(massivChisel: number[], chislo: number): number[][] {
      *
      * А т.к. входящие числа уникальны - неравенство строгое
      */
-    const maxStart = slice(numbers, target / count, start, end)
-    for (let i = start; i < maxStart; i++) {
+    const maxStartValue = target / count
+    for (let i = start; numbers[i] < maxStartValue; i++) {
       /** оставшаяся часть собираемого числа */
       const tempTarget = target - numbers[i]
       // Числа уникальны и отсортированы.
@@ -154,7 +151,6 @@ function sostavChisla(massivChisel: number[], chislo: number): number[][] {
 
   return getCombinations(numbers, chislo)
 }
-
 
 // console.log(sostavChisla([8, 2, 3, 4, 6, 7, 1], 99));
 
