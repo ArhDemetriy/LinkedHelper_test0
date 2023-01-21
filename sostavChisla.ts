@@ -13,7 +13,7 @@
   @return Array<Array<number>>
 */
 function sostavChisla(massivChisel: number[], chislo: number): number[][] {
-  const numbers = massivChisel.concat().sort()
+  const numbers = massivChisel.concat().sort();
 
   function binarySearch(numbers: number[], target: number, start = 0, end = numbers.length - 1) {
     let middle = Math.round((end - start) / 2) + start;
@@ -27,9 +27,9 @@ function sostavChisla(massivChisel: number[], chislo: number): number[][] {
     }
 
     if (numbers[middle] === target) {
-      return middle
+      return middle;
     } else {
-      return -1
+      return -1;
     }
   }
 
@@ -38,76 +38,82 @@ function sostavChisla(massivChisel: number[], chislo: number): number[][] {
    * Основной метод, комбинации большей длинны рекурсивно сводятся к этому методу.
    */
   function getTwos(numbers: number[], target: number, start = 0, end = numbers.length): number[][] {
-    const result: number[][] = []
+    const result: number[][] = [];
 
-    const half = target / 2
+    const half = target / 2;
     // последний элемент в последовательности точно не является первым в выборке
-    const maxFirstPosition = end - 1
+    const maxFirstPosition = end - 1;
     for (let i = start; i < maxFirstPosition && numbers[i] < half; i++) {
-      const secondValue = target - numbers[i]
-      const secondIndex = binarySearch(numbers, secondValue, i + 1, end - 1)
+      const secondValue = target - numbers[i];
+      const secondIndex = binarySearch(numbers, secondValue, i + 1, end - 1);
       if (secondIndex > 0 && numbers[secondIndex] === secondValue) {
-        result.push([numbers[i], numbers[secondIndex]])
+        result.push([numbers[i], numbers[secondIndex]]);
       }
     }
 
-    return result
+    return result;
   }
 
   /**
    * рекурсивное сведение общего случая к комбинации 2 чисел
    */
   function getManes(count: number, numbers: number[], target: number, start = 0, end = numbers.length): number[][] {
-    if (count <= 0)
-      return []
-
-    if (count === 1) {
-      if (target === numbers[numbers.length - 1])
-        return [[numbers[numbers.length - 1]]]
-
-      if (target < numbers[numbers.length - 1]) {
-        const i = numbers.findIndex(n => n >= target)
-        if (i >= 0 && target === numbers[i])
-          return [[numbers[i]]]
-      }
-
-      return []
+    if (count <= 0) {
+      return [];
     }
 
-    if (count === 2)
-      return getTwos(numbers, target, start, end)
+    if (count === 1) {
+      if (target === numbers[numbers.length - 1]) {
+        return [[numbers[numbers.length - 1]]];
+      }
 
-    let result: number[][] = []
+      if (target < numbers[numbers.length - 1]) {
+        const i = numbers.findIndex(n => n >= target);
+        if (i >= 0 && target === numbers[i]) {
+          return [[numbers[i]]];
+        }
+      }
+
+      return [];
+    }
+
+    if (count === 2) {
+      return getTwos(numbers, target, start, end);
+    }
+
+    let result: number[][] = [];
     /**
      * Хотябы 1 число должно попадать в этот диапазон.
      * (target / count) * count === target
      *
      * А т.к. входящие числа уникальны - неравенство строгое
      */
-    const maxStartValue = target / count
+    const maxStartValue = target / count;
     for (let i = start; numbers[i] < maxStartValue; i++) {
       /** оставшаяся часть собираемого числа */
-      const tempTarget = target - numbers[i]
+      const tempTarget = target - numbers[i];
       // Числа уникальны и отсортированы.
       // А значит все последующие больше numbers[i] и tempTarget в следующих итерациях будет только меньше.
       // Потому прерывание.
       // Чисел нужно ещё (count - 1) штук + прогрессия
       // минимальный случай: count === 3 ==> numbers[i] + 1 + numbers[i] + 2
-      if (tempTarget < numbers[i] * (count - 1) + count)
-        break
+      if (tempTarget < numbers[i] * (count - 1) + count) {
+        break;
+      }
 
       /** все комбинации чисел из которых можно собрать tempTarget */
-      const tempResult = getManes(count - 1, numbers, tempTarget, i + 1, end)
+      const tempResult = getManes(count - 1, numbers, tempTarget, i + 1, end);
 
-      if (!tempResult.length)
-        continue
+      if (!tempResult.length) {
+        continue;
+      }
       // комбинации в tempResult это (target - numbers[i])
       // а на этом уровне рекурсии нужно собрать комбинацию для target
-      tempResult.forEach(a => a.unshift(numbers[i]))
-      result = result.concat(tempResult)
+      tempResult.forEach(a => a.unshift(numbers[i]));
+      result = result.concat(tempResult);
     }
 
-    return result
+    return result;
   }
 
   /**
@@ -116,40 +122,44 @@ function sostavChisla(massivChisel: number[], chislo: number): number[][] {
    * @param target number собираемое число
    */
   function getCombinations(numbers: number[], target: number): number[][] {
-    if (!numbers.length || target < numbers[0])
-      return []
+    if (!numbers.length || target < numbers[0]) {
+      return [];
+    }
 
     let result: number[][] = [];
 
-    {// ones
+    { // ones
       // удаление элементов больше target
       // заодно добавление элемента равного target в result, если такой элемент есть во входящем массиве
-      if (target === numbers[numbers.length - 1])
-        result.push([numbers.pop()!])
-      else if (target < numbers[numbers.length - 1]) {
-        const i = numbers.findIndex(n => n >= target)
-        if (target === numbers[i])
-          result.push([numbers[i]])
-        numbers.splice(i)
+      if (target === numbers[numbers.length - 1]) {
+        result.push([numbers.pop()!]);
+      } else if (target < numbers[numbers.length - 1]) {
+        const i = numbers.findIndex(n => n >= target);
+        if (target === numbers[i]) {
+          result.push([numbers[i]]);
+        }
+        numbers.splice(i);
       }
-      if (numbers.length < 2 || target <= 2)
-        return result
+      if (numbers.length < 2 || target <= 2) {
+        return result;
+      }
     }
 
     /** количество элементов в максимальном случае прогрессии */
     // (n+1)*n при больших n близко к n**2
-    const maxCount = Math.min(numbers.length, 1.41421356237 * Math.sqrt(target))
+    const maxCount = Math.min(numbers.length, 1.41421356237 * Math.sqrt(target));
     for (let count = 2; count <= maxCount; count++) {
-      const temp = getManes(count, numbers, target)
-      if (!temp.length)
-        continue
-      result = result.concat(temp)
+      const temp = getManes(count, numbers, target);
+      if (!temp.length) {
+        continue;
+      }
+      result = result.concat(temp);
     }
 
-    return result
+    return result;
   }
 
-  return getCombinations(numbers, chislo)
+  return getCombinations(numbers, chislo);
 }
 
 // console.log(sostavChisla([8, 2, 3, 4, 6, 7, 1], 99));
